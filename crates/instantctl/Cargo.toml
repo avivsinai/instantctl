@@ -1,0 +1,31 @@
+[package]
+name = "instantctl"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+description = "HPE Instant On network management CLI with planned writes and verified readback"
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+clap_complete.workspace = true
+comfy-table.workspace = true
+instantctl-api.workspace = true
+jiff.workspace = true
+network-interface = "=2.0.5"
+rpassword.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml_ng.workspace = true
+tokio = { workspace = true, features = ["signal"] }
+url.workspace = true
+
+[target.'cfg(unix)'.dev-dependencies]
+nix = { version = "=0.31.3", default-features = false, features = ["term", "fs"] }
+
+[lints]
+workspace = true

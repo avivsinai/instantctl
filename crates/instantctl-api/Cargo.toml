@@ -1,0 +1,36 @@
+[package]
+name = "instantctl-api"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+description = "HPE Instant On portal client, resource types, authentication, and verified mutations"
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+reqwest.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+url.workspace = true
+base64.workspace = true
+getrandom.workspace = true
+jiff.workspace = true
+sha2.workspace = true
+keyring-core.workspace = true
+roxmltree.workspace = true
+
+[target.'cfg(unix)'.dependencies]
+libc.workspace = true
+
+[target.'cfg(target_os = "macos")'.dependencies]
+apple-native-keyring-store.workspace = true
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util"] }

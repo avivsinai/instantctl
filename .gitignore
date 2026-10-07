@@ -1,0 +1,19 @@
+/target/
+/dist/
+*.crate
+
+# Local credentials and environment overrides.
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Local operating system and editor files.
+.DS_Store
+.idea/
+.vscode/
+
+# Private operator evidence belongs outside the source tree.
+/private/
+/captures/
+/instantctl-live-read*.json

@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust:
+    name: Rust (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    env:
+      CARGO_BUILD_JOBS: 2
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2
+        with:
+          components: clippy, rustfmt
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Build workspace
+        run: cargo build --workspace --locked
+      - name: Run Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Run tests
+        run: cargo test --workspace --all-targets --locked
+      - name: Check crate source contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo package --list --locked --package instantctl > target/instantctl-package-files.txt
+          cargo package --list --locked --package instantctl-api > target/instantctl-api-package-files.txt
+          for file in README.md LICENSE build.rs src/main.rs; do
+            grep -Fxq "$file" target/instantctl-package-files.txt || {
+              echo "instantctl package is missing $file" >&2
+              exit 1
+            }
+          done
+          for file in README.md LICENSE src/lib.rs; do
+            grep -Fxq "$file" target/instantctl-api-package-files.txt || {
+              echo "instantctl-api package is missing $file" >&2
+              exit 1
+            }
+          done
+      - name: Generate manual pages
+        run: cargo run --locked --package xtask -- man --output target/man
+      - name: Check generated manual pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s target/man/instantctl.1
+          test -s target/man/instantctl-site-list.1
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+      - name: Scan repository with Gitleaks
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
