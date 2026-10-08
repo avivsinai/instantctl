@@ -28,7 +28,7 @@ roxmltree = "=0.21.1"
 base64 = "=0.23.1"
 getrandom = "=0.4.3"
 jiff = { version = "=0.2.37", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo", "tzdb-bundle-platform"] }
-sha2 = "=0.10.9"
+sha2 = "=0.11.0"
 keyring-core = "=1.0.0"
 libc = "=0.2.190"
 apple-native-keyring-store = { version = "=1.0.2", features = ["keychain"] }
