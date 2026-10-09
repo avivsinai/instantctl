@@ -38,6 +38,8 @@ jobs:
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - name: Run tests
         run: cargo test --workspace --all-targets --locked
+      - name: Compile API documentation examples
+        run: cargo test --doc --locked --package instantctl-api
       - name: Check crate source contents
         shell: bash
         run: |

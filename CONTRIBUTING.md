@@ -13,6 +13,7 @@ cargo fmt --all -- --check
 cargo build --workspace --locked
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --all-targets --locked
+cargo test --doc --locked --package instantctl-api
 cargo xtask man
 ```
 
