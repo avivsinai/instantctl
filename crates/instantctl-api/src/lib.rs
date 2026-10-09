@@ -1,4 +1,4 @@
-//! Fixed-origin HPE Instant On portal client with bounded, redacted transport.
+#![doc = include_str!("../README.md")]
 
 pub mod api;
 pub mod auth;

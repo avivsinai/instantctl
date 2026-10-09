@@ -2,10 +2,11 @@
 
 Changes to this project are recorded here.
 
-## 0.1.0 — unreleased
+## 0.1.0 — 2026-10-07
 
-This is the first public source release candidate. No crate, package-manager,
-or binary release is published yet.
+First public source release. The [GitHub release](https://github.com/avivsinai/instantctl/releases/tag/v0.1.0)
+contains a source archive and SHA-256 checksum. Install the CLI from source;
+no crate, package-manager, or prebuilt binary release is published yet.
 
 - Add the `instantctl` Rust CLI for HPE Instant On portal operations.
 - Support saved login profiles on macOS and token input through stdin or the
