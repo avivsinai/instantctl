@@ -11,7 +11,7 @@ application's `Cargo.toml`:
 
 ```toml
 [dependencies]
-instantctl-api = { git = "https://github.com/avivsinai/instantctl", tag = "v0.1.0" }
+instantctl-api = { git = "https://github.com/avivsinai/instantctl", tag = "v0.1.1" }
 tokio = { version = "1", features = ["macros", "rt"] }
 ```
 
