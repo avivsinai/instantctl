@@ -2,6 +2,18 @@
 
 Changes to this project are recorded here.
 
+## 0.1.1 — 2026-10-20
+
+Maintenance source release. The [GitHub release](https://github.com/avivsinai/instantctl/releases/tag/v0.1.1)
+contains a source archive and SHA-256 checksum. Install the CLI from source;
+no crate, package-manager, or prebuilt binary release is published yet.
+
+- Update `sha2` to 0.11.0. SSO sign-in uses it to make the PKCE code challenge.
+- Update `jiff` to 0.2.38 and `serde_json` to 1.0.154.
+- Add a getting-started guide to the `instantctl-api` README. The crate
+  documentation now uses this guide, and CI compiles its Rust example.
+- Change the library Git dependency example to tag `v0.1.1`.
+
 ## 0.1.0 — 2026-10-07
 
 First public source release. The [GitHub release](https://github.com/avivsinai/instantctl/releases/tag/v0.1.0)
