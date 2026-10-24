@@ -17,3 +17,11 @@
 /private/
 /captures/
 /instantctl-live-read*.json
+
+# Local agent and tooling state.
+.agent-mail/
+.amqrc
+.opencode/
+
+# macOS Spotlight opt-out marker.
+.metadata_never_index
