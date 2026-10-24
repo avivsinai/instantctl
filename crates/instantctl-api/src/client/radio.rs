@@ -432,12 +432,19 @@ fn offered(radio: &Value, width: Width, selected: &[u16]) -> Result<(), Error> {
     }
     Ok(())
 }
-fn require_device_capability(body: &Value, name: &str) -> Result<(), Error> {
-    if body
-        .pointer(&format!("/capabilities/has/{name}"))
+// Inventory reports a capability flag under capabilities.has or directly on
+// capabilities, depending on the portal response.
+fn device_capability(body: &Value, name: &str) -> Option<bool> {
+    body.pointer(&format!("/capabilities/has/{name}"))
         .and_then(Value::as_bool)
-        != Some(true)
-    {
+        .or_else(|| {
+            body.pointer(&format!("/capabilities/{name}"))
+                .and_then(Value::as_bool)
+        })
+}
+
+fn require_device_capability(body: &Value, name: &str) -> Result<(), Error> {
+    if device_capability(body, name) != Some(true) {
         return Err(usage(
             "AP does not advertise support for the requested radio feature",
         ));
@@ -466,10 +473,8 @@ async fn specific_configuration_allowed<T: TokenSource>(
             "mesh uplinks cannot use specific 5 or 6 GHz radio settings",
         ));
     }
-    match body
-        .pointer("/capabilities/has/radioBandMapping")
-        .and_then(Value::as_bool)
-    {
+    // A false flag means the AP has no band-mapping choice.
+    match device_capability(body, "radioBandMapping") {
         Some(false) => return Ok(()),
         Some(true) => {}
         None => return Err(unknown("AP band-mapping capability is unknown")),
