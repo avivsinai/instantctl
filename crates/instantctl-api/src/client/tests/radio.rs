@@ -435,6 +435,36 @@ async fn mesh_ap_refuses_specific_5_and_6_ghz_config_but_allows_24_ghz() {
     assert_eq!(server.finish().len(), 1);
 }
 
+#[tokio::test]
+async fn flat_capability_flag_allows_a_24_ghz_channel_pin() {
+    let mut before = ap_radio("AP22");
+    let has = before["capabilities"]["has"].clone();
+    before["capabilities"] = has;
+    let server = MockServer::start(vec![inventory(vec![before])]);
+    let client = test_client(&server);
+    let prepared = radio::set_ap(
+        &client,
+        SITE,
+        "AP22",
+        Patch {
+            band: Some(Band::Ghz24),
+            channels: Some(vec![6]),
+            ..Patch::default()
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        prepared.plan.desired["/radioManagementBands/2.4ghz/radioManagementBand/configuration/channels"],
+        json!(["6"])
+    );
+    assert_eq!(
+        prepared.plan.desired["/radioManagementBands/2.4ghz/useDeviceRadioManagementConfig"],
+        json!(true)
+    );
+    assert_eq!(server.finish().len(), 1);
+}
+
 #[tokio::test(start_paused = true)]
 async fn explicit_ap_mapping_can_enable_a_band_in_the_same_full_object_put() {
     let _clock = keep_clock_paused().await;
@@ -636,6 +666,32 @@ async fn ap_mapping_patch_sets_mapping_and_independent_inheritance_flag() {
         request_body(requests.iter().find(|r| r.method == "PUT").unwrap()),
         desired
     );
+}
+
+#[tokio::test]
+async fn flat_capability_flag_allows_an_ap_mapping_patch() {
+    let mut before = ap_radio("AP27");
+    let mut capabilities = before["capabilities"]["has"].clone();
+    capabilities["radioBandMapping"] = json!(true);
+    before["capabilities"] = capabilities;
+    let server = MockServer::start(vec![inventory(vec![before])]);
+    let client = test_client(&server);
+    let prepared = radio::set_ap(
+        &client,
+        SITE,
+        "AP27",
+        Patch {
+            mapping: Some(BandMapping::Ghz5And6),
+            ..Patch::default()
+        },
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        prepared.plan.desired["/radioBandMapping"],
+        json!("5ghz_and_6ghz")
+    );
+    assert_eq!(server.finish().len(), 1);
 }
 
 #[tokio::test]
