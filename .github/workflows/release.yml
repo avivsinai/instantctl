@@ -1,0 +1,201 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: "${{ startsWith(github.event.head_commit.message, 'chore(release): v') }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.prepare.outputs.tag }}
+      version: ${{ steps.prepare.outputs.version }}
+      release_ref: ${{ steps.prepare.outputs.release_ref }}
+      release_sha: ${{ steps.prepare.outputs.release_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Resolve release metadata
+        id: prepare
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          validate_tag() {
+            local tag="$1"
+            if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z]+)*$ ]]; then
+              echo "::error::Release identifiers must use vX.Y.Z style tags."
+              exit 1
+            fi
+          }
+
+          case "$EVENT_NAME" in
+            push)
+              commit_subject="${COMMIT_MESSAGE%%$'\n'*}"
+              tag="${commit_subject#chore(release): }"
+              tag="${tag%% \(#*}"
+              validate_tag "$tag"
+
+              version="${tag#v}"
+              ./scripts/check-release-version.sh "$version"
+
+              release_sha="${GITHUB_SHA}"
+              if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null 2>&1; then
+                existing_sha="$(git rev-parse "refs/tags/${tag}^{commit}" 2>/dev/null || git rev-parse "refs/tags/${tag}")"
+                if [[ "$existing_sha" != "$release_sha" ]]; then
+                  echo "::error::Tag ${tag} already exists but points to ${existing_sha}, not ${release_sha}."
+                  exit 1
+                fi
+              fi
+              release_ref="${release_sha}"
+              ;;
+            *)
+              echo "::error::Unsupported event: ${EVENT_NAME}"
+              exit 1
+              ;;
+          esac
+
+          {
+            echo "tag=${tag}"
+            echo "version=${version}"
+            echo "release_ref=${release_ref}"
+            echo "release_sha=${release_sha}"
+          } >> "$GITHUB_OUTPUT"
+
+  verify:
+    needs: prepare
+    if: needs.prepare.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.prepare.outputs.release_ref }}
+      - uses: actions-rust-lang/setup-rust-toolchain@ecabd13d1c56bd1345c230e542e9144811ad706f # v2
+      - name: Verify release metadata
+        run: ./scripts/check-release-version.sh "${{ needs.prepare.outputs.version }}"
+      - name: Run tests
+        run: cargo test --workspace --locked
+
+  release:
+    needs: [prepare, verify]
+    if: needs.prepare.result == 'success' && needs.verify.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      attestations: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.prepare.outputs.release_ref }}
+
+      # The v* tag ruleset lets only the release App create tags. Until the
+      # App is configured (vars.RELEASE_APP_CLIENT_ID), the job token is used.
+      - name: Mint release App token
+        id: release-app
+        if: vars.RELEASE_APP_CLIENT_ID != ''
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - name: Create release tag after verification
+        shell: bash
+        env:
+          TAG: ${{ needs.prepare.outputs.tag }}
+          RELEASE_SHA: ${{ needs.prepare.outputs.release_sha }}
+          GH_TOKEN: ${{ steps.release-app.outputs.token || github.token }}
+        run: |
+          set -euo pipefail
+
+          git fetch --force --tags origin
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null 2>&1; then
+            existing_sha="$(git rev-parse "refs/tags/${TAG}^{commit}" 2>/dev/null || git rev-parse "refs/tags/${TAG}")"
+            if [[ "$existing_sha" != "$RELEASE_SHA" ]]; then
+              echo "::error::Tag ${TAG} already exists but points to ${existing_sha}, not ${RELEASE_SHA}."
+              exit 1
+            fi
+          else
+            gh api "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/tags/${TAG}" -f sha="$RELEASE_SHA" >/dev/null
+          fi
+
+      - name: Build source tarball
+        shell: bash
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -euo pipefail
+          git archive --format=tar.gz --prefix="instantctl-${VERSION}/" -o "instantctl-${VERSION}-source.tar.gz" "refs/tags/v${VERSION}^{commit}"
+          sha256sum "instantctl-${VERSION}-source.tar.gz" > "instantctl-${VERSION}-source.tar.gz.sha256"
+
+      - name: Extract release notes for this tag
+        shell: bash
+        env:
+          RELEASE_NOTES_PATH: ${{ runner.temp }}/RELEASE_NOTES.md
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+          python3 - "$VERSION" "$RELEASE_NOTES_PATH" <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          version = sys.argv[1]
+          output_path = pathlib.Path(sys.argv[2])
+          text = pathlib.Path("CHANGELOG.md").read_text(encoding="utf-8")
+          pattern = re.compile(
+              rf"(?ms)^## \[{re.escape(version)}\] - \d{{4}}-\d{{2}}-\d{{2}}\n.*?(?=^## \[|\Z)"
+          )
+          match = pattern.search(text)
+          if not match:
+              raise SystemExit(f"missing changelog section for {version}")
+          output_path.write_text(match.group(0).strip() + "\n", encoding="utf-8")
+          PY
+
+      - name: Create the GitHub release
+        shell: bash
+        env:
+          TAG: ${{ needs.prepare.outputs.tag }}
+          PRERELEASE: ${{ contains(needs.prepare.outputs.version, '-') }}
+          GH_TOKEN: ${{ steps.release-app.outputs.token || github.token }}
+          RELEASE_NOTES_PATH: ${{ runner.temp }}/RELEASE_NOTES.md
+        run: |
+          set -euo pipefail
+          extra_args=""
+          if [[ "$PRERELEASE" == "true" ]]; then
+            extra_args="--prerelease"
+          fi
+          gh release create "$TAG" \
+            "instantctl-${{ needs.prepare.outputs.version }}-source.tar.gz" \
+            "instantctl-${{ needs.prepare.outputs.version }}-source.tar.gz.sha256" \
+            --title "instantctl ${{ needs.prepare.outputs.version }}" \
+            --notes-file "$RELEASE_NOTES_PATH" \
+            $extra_args
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: |
+            instantctl-*-source.tar.gz
+            instantctl-*-source.tar.gz.sha256

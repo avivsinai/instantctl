@@ -2,7 +2,14 @@
 
 Changes to this project are recorded here.
 
-## 0.1.1 — 2026-10-20
+## [Unreleased]
+### Fixed
+- Update `rustls`, `webpki` and `quinn-proto` past current RustSec advisories.
+- Update `tokio` to 1.53.3, `libc` to 0.2.191, `sha2` to 0.11.1 and
+  `keyring-core` to 1.0.1.
+- Fix flat capability flags in `instantctl radio`.
+
+## [0.1.1] - 2026-10-20
 
 Maintenance source release. The [GitHub release](https://github.com/avivsinai/instantctl/releases/tag/v0.1.1)
 contains a source archive and SHA-256 checksum. Install the CLI from source;
@@ -14,7 +21,7 @@ no crate, package-manager, or prebuilt binary release is published yet.
   documentation now uses this guide, and CI compiles its Rust example.
 - Change the library Git dependency example to tag `v0.1.1`.
 
-## 0.1.0 — 2026-10-07
+## [0.1.0] - 2026-10-07
 
 First public source release. The [GitHub release](https://github.com/avivsinai/instantctl/releases/tag/v0.1.0)
 contains a source archive and SHA-256 checksum. Install the CLI from source;
