@@ -157,8 +157,7 @@ pub(crate) fn is_mac_address(value: &str) -> bool {
 pub(crate) fn validate_action_ack(response: &Value, device_id: &str) -> Result<(), Error> {
     let acknowledged_id = response.get("id").and_then(Value::as_str);
     let acknowledged_kind = response.get("kind").and_then(Value::as_str);
-    if acknowledged_id != Some(device_id) || !acknowledged_kind.is_some_and(|kind| !kind.is_empty())
-    {
+    if acknowledged_id != Some(device_id) || acknowledged_kind.is_none_or(|kind| kind.is_empty()) {
         return Err(general(
             "action acknowledgment did not identify the requested device",
         ));
