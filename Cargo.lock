@@ -797,7 +797,7 @@ dependencies = [
 
 [[package]]
 name = "instantctl"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "clap",
@@ -817,7 +817,7 @@ dependencies = [
 
 [[package]]
 name = "instantctl-api"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "apple-native-keyring-store",
  "base64",
@@ -2206,7 +2206,7 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
 name = "xtask"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "clap",
