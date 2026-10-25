@@ -4,6 +4,9 @@ Changes to this project are recorded here.
 
 ## [Unreleased]
 
+### Fixed
+- The release workflow now fetches the freshly created tag before building the source tarball (v0.1.2's run failed there).
+
 ## [0.1.2] - 2026-10-25
 ### Fixed
 - Update `rustls`, `webpki` and `quinn-proto` past current RustSec advisories.
