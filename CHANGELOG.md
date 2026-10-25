@@ -3,11 +3,14 @@
 Changes to this project are recorded here.
 
 ## [Unreleased]
+
+## [0.1.2] - 2026-10-25
 ### Fixed
 - Update `rustls`, `webpki` and `quinn-proto` past current RustSec advisories.
 - Update `tokio` to 1.53.3, `libc` to 0.2.191, `sha2` to 0.11.1 and
   `keyring-core` to 1.0.1.
 - Fix flat capability flags in `instantctl radio`.
+
 
 ## [0.1.1] - 2026-10-20
 
