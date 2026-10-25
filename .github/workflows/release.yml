@@ -140,6 +140,9 @@ jobs:
           else
             gh api "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/tags/${TAG}" -f sha="$RELEASE_SHA" >/dev/null
           fi
+          # The API created the tag on the server; the local checkout does not
+          # have it yet. Fetch it so the tarball step can archive it.
+          git fetch --force --tags origin
 
       - name: Build source tarball
         shell: bash
