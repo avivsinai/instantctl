@@ -27,7 +27,7 @@ url = "=2.5.8"
 roxmltree = "=0.21.2"
 base64 = "=0.23.1"
 getrandom = "=0.4.3"
-jiff = { version = "=0.2.38", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo", "tzdb-bundle-platform"] }
+jiff = { version = "=0.2.40", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo", "tzdb-bundle-platform"] }
 sha2 = "=0.11.1"
 keyring-core = "=1.0.1"
 libc = "=0.2.191"
