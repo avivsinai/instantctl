@@ -5,7 +5,6 @@ edition.workspace = true
 publish.workspace = true
 license.workspace = true
 repository.workspace = true
-homepage.workspace = true
 readme = "README.md"
 description = "HPE Instant On portal client, resource types, authentication, and verified mutations"
 
@@ -20,7 +19,6 @@ base64.workspace = true
 getrandom.workspace = true
 jiff.workspace = true
 sha2.workspace = true
-keyring-core.workspace = true
 roxmltree.workspace = true
 
 [target.'cfg(unix)'.dependencies]
@@ -28,6 +26,7 @@ libc.workspace = true
 
 [target.'cfg(target_os = "macos")'.dependencies]
 apple-native-keyring-store.workspace = true
+keyring-core.workspace = true
 
 [lints]
 workspace = true
