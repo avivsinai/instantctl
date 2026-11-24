@@ -4,6 +4,30 @@ Changes to this project are recorded here.
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-24
+
+Source-only maintenance release.
+
+### Fixed
+- Restore terminal settings when Ctrl-C interrupts a hidden password prompt
+  by updating `rpassword` to `7.5.5`.
+  [#24](https://github.com/avivsinai/instantctl/pull/24)
+- Resolve Cargo 1.100 manifest warnings by removing redundant `homepage`
+  metadata and scoping `keyring-core` to macOS.
+  [#23](https://github.com/avivsinai/instantctl/pull/23)
+
+### Changed
+- Update Jiff from `0.2.38` through `0.2.40` to `0.2.46`, including the required
+  `jiff-core` and `jiff-static` updates.
+  [0.2.40 update](https://github.com/avivsinai/instantctl/commit/ca55a7ed1e98e793ba1dcb4e900f7f239acd445a)
+  · [#27](https://github.com/avivsinai/instantctl/pull/27)
+- Update `roxmltree` to `0.21.2` and Tokio to `1.54.1`.
+  [#19](https://github.com/avivsinai/instantctl/pull/19)
+  · [#20](https://github.com/avivsinai/instantctl/pull/20)
+- Update `actions-rust-lang/setup-rust-toolchain` to `2.0.1` in CI and release
+  verification.
+  [Workflow update](https://github.com/avivsinai/instantctl/commit/1c8dfbf814b8d66fb936170c03522434a7217639)
+
 ## [0.1.3] - 2026-10-25
 ### Fixed
 - The release workflow now fetches the freshly created tag before building the source tarball (v0.1.2's run failed there).
