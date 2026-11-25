@@ -4,6 +4,15 @@ Changes to this project are recorded here.
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-25
+
+Source-only maintenance release.
+
+### Security
+- Update `url` to 2.5.9 and `form_urlencoded` to 1.2.3 to address
+  [RUSTSEC-2026-0592](https://rustsec.org/advisories/RUSTSEC-2026-0592.html).
+  Thanks to Dependabot [#32](https://github.com/avivsinai/instantctl/pull/32).
+
 ## [0.1.4] - 2026-11-24
 
 Source-only maintenance release.
