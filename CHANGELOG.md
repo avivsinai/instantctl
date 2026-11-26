@@ -4,6 +4,20 @@ Changes to this project are recorded here.
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-11-26
+
+Source-only maintenance release.
+
+### Changed
+- Update Jiff to `1.0.2` and cover repeated fall-back hours: explicit UTC
+  offsets for the same local clock time select different event cutoffs.
+  [#37](https://github.com/avivsinai/instantctl/pull/37)
+- Update the macOS `keyring-core` dependency to `1.1.0` and add a disposable
+  Keychain smoke test for existing saved profiles.
+  [#38](https://github.com/avivsinai/instantctl/pull/38)
+- Update man-page generation to `clap_mangen` `0.3.4`.
+  [#36](https://github.com/avivsinai/instantctl/pull/36)
+
 ## [0.1.5] - 2026-11-25
 
 Source-only maintenance release.
