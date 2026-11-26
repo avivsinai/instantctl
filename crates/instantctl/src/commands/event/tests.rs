@@ -57,6 +57,30 @@ fn since_uses_offsets_and_durations_and_rejects_future_before_requests() {
 }
 
 #[test]
+fn explicit_offsets_distinguish_both_occurrences_of_a_fall_back_hour() {
+    let earlier = "2026-10-24T22:30:00Z".parse::<Timestamp>().unwrap();
+    let later = "2026-10-24T23:30:00Z".parse::<Timestamp>().unwrap();
+    let now = "2026-10-25T02:00:00Z".parse::<Timestamp>().unwrap();
+    let events = [
+        event("first", Some(earlier.as_second() as f64)),
+        event("second", Some(later.as_second() as f64)),
+    ];
+
+    for (value, expected, included) in [
+        (
+            "2026-10-25T01:30:00+03:00",
+            earlier,
+            &["first", "second"][..],
+        ),
+        ("2026-10-25T01:30:00+02:00", later, &["second"][..]),
+    ] {
+        let since = parse_since(Some(value), now).unwrap();
+        assert_eq!(since, Some(expected));
+        assert_eq!(ids(&ordered(&events, since).unwrap()), included);
+    }
+}
+
+#[test]
 fn epoch_seconds_filter_and_order_are_correct_and_unknown_times_are_not_invented() {
     let events = vec![
         event("later", Some(1002.0)),
