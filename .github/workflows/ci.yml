@@ -67,6 +67,11 @@ jobs:
           test -s target/man/instantctl.1
           test -s target/man/instantctl-site-list.1
 
+      - name: Check existing macOS Keychain profile
+        if: runner.os == 'macOS' && runner.environment == 'github-hosted'
+        timeout-minutes: 4
+        run: bash scripts/smoke-macos-keychain.sh
+
   secrets:
     name: Secret scan
     runs-on: ubuntu-latest
